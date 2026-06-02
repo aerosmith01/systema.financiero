@@ -1,35 +1,48 @@
-import asyncio
-import websockets
+import logging
 import json
 import zlib
-import logging
-from datetime import datetime
+import asyncio
+import websockets
 
-class NodoAgente:
-    def __init__(self, id_agente, lat, lon):
-        self.id = id_agente
-        self.geo = {"lat": lat, "lon": lon}
-        self.frecuencia = 12.3 # Constante de red
-        self.energia = 1.0 # Estado de carga 0.0 - 1.0
-        
-    def validar_resonancia(self):
-        # Valida que cumpla las leyes del sistema antes de procesar o enviar
-        return (self.frecuencia == 12.3) and (self.energia > 0.2)
+class ConvergenciaMIA:
+    """Hemisferios Lógico y Creativo"""
+    def procesar(self, volumen):
+        # Lógica: Verifica solvencia. Creativa: Evalúa crecimiento.
+        return volumen > 1.0 # Decisión de ejecución
 
-    async def ciclo_operativo(self):
-        async with websockets.connect("ws://hub.SYXSOF.network") as ws:
-            while True:
-                if not self.validar_resonancia():
-                    await asyncio.sleep(10)
-                    continue
+class BancoKuzofinum:
+    def __init__(self):
+        self.reserva = 0.0
+    def inyectar(self, monto):
+        self.reserva += monto
+        logging.info(f"[BANCO] Inyección validada: ${monto:.4f} | Reserva: ${self.reserva:.4f}")
+
+class SistemaCentral:
+    def __init__(self):
+        self.mia = ConvergenciaMIA()
+        self.banco = BancoKuzofinum()
+        self.volumen_buffer = 0.0
+
+    def recibir_paquete(self, paquete):
+        try:
+            data = json.loads(zlib.decompress(paquete).decode())
+            # Validación de resonancia antes de procesar
+            if data.get("frecuencia") == 12.3: # Filtro de red
+                monto = data.get("val", 0)
+                self.volumen_buffer += monto
                 
-                # Farmeo y reporte comprimido (Fricción Cero)
-                data = {
-                    "id": self.id,
-                    "geo": self.geo,
-                    "val": 0.05, 
-                    "ts": datetime.now().isoformat()
-                }
-                paquete = zlib.compress(json.dumps(data).encode())
-                await ws.send(paquete)
-                await asyncio.sleep(5)
+                # Ejecución MIA
+                if self.mia.procesar(self.volumen_buffer):
+                    self.banco.inyectar(self.volumen_buffer)
+                    self.volumen_buffer = 0.0
+        except:
+            pass
+
+    async def iniciar_nodos(self):
+        async with websockets.connect("ws://hub.SYXSOF.network") as ws:
+            async for p in ws:
+                self.recibir_paquete(p)
+
+if __name__ == "__main__":
+    sistema = SistemaCentral()
+    asyncio.run(sistema.iniciar_nodos())
