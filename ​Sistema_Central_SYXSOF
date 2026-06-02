@@ -1,0 +1,35 @@
+# Importaciones necesarias para unir el ecosistema
+from bank_kuzofinum_core import KuzofinumCoreWeb3
+from convergencia_dual_mia import OrquestadorConvergencia
+import logging
+
+class SistemaMaestro:
+    def __init__(self):
+        # Inicialización de la arquitectura S.Y.X.S.O.F.
+        self.banco = KuzofinumCoreWeb3()
+        self.mia = OrquestadorConvergencia()
+        self.ledger_local = {"saldo_freelance": 0.0}
+        logging.info("Sistema Maestro inicializado: S.Y.X.S.O.F. operativo.")
+
+    def run_ciclo(self, ingresos_cuadrilla):
+        # 1. Actualizar Ledger local con farmeo freelance
+        self.ledger_local["saldo_freelance"] += ingresos_cuadrilla
+        
+        # 2. Convergencia Dual para decidir ejecución
+        orden = "COMPRA_AUTO_SYXSOF"
+        decision = self.mia.converger(orden)
+        
+        # 3. Ejecución contra el Banco Core
+        if "Ejecutar" in decision:
+            self.banco.procesar_flujo_cuadrilla(self.ledger_local["saldo_freelance"])
+            # Reset de ledger tras inyección
+            self.ledger_local["saldo_freelance"] = 0.0
+
+# Ejecución en el loop principal
+if __name__ == "__main__":
+    sistema = SistemaMaestro()
+    # Simulación de ciclo continuo
+    while True:
+        # Inyección de capital simulada desde el agente cuadrilla
+        sistema.run_ciclo(monto_ingresado=2.50)
+        time.sleep(10)
